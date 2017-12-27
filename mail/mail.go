@@ -33,7 +33,7 @@ func init() {
 
 func sendBlogToMail() {
 	fmt.Println("exec send blog to mail")
-	cells := storage.GetStorageContent(time.Now(), func(cell *storage.StorageCell) bool {
+	cells := storage.GetStorageContent(time.Now().Add(-24*time.Hour), func(cell *storage.StorageCell) bool {
 		exists := storage.Check(cell.Title)
 		if !exists {
 			storage.Put(cell.Title, "1")
