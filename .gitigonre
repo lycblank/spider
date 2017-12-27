@@ -1,0 +1,5 @@
+*.swp
+*.out
+/study-spider
+/datas
+/conf_bak

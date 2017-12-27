@@ -1,0 +1,8 @@
+{
+	"mail": {
+		"user": "xxxx@qq.com",
+		"password": "xxxx",
+		"host": "smtp.qq.com:25",
+		"to": "xxxx@qq.com"
+	}
+}
