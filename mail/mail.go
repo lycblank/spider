@@ -2,9 +2,12 @@ package mail
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/smtp"
 	"strings"
+	"study-spider/boss"
+	"study-spider/cnblogs"
 	"study-spider/config"
 	"study-spider/storage"
 	"time"
@@ -29,14 +32,27 @@ func init() {
 			t = time.NewTicker(24 * time.Hour)
 		}
 	}()
+	go func() {
+		t := time.NewTicker(30 * time.Second)
+		for {
+			<-t.C
+			sendBossToMail()
+			t = time.NewTicker(24 * time.Hour)
+		}
+	}()
 }
 
 func sendBlogToMail() {
-	fmt.Println("exec send blog to mail")
-	cells := storage.GetStorageContent(time.Now().Add(-24*time.Hour), func(cell *storage.StorageCell) bool {
-		exists := storage.Check(cell.Title)
+	cells := []cnblogs.BlogCell{}
+	storage.GetStorageContent(time.Now().Add(-24*time.Hour), "blog", func(raw []byte) bool {
+		cell := cnblogs.BlogCell{}
+		if err := json.Unmarshal(raw, &cell); err != nil {
+			return false
+		}
+		exists := storage.Check("blog", cell.Title)
 		if !exists {
-			storage.Put(cell.Title, "1")
+			storage.Put("blog", cell.Title, "1")
+			cells = append(cells, cell)
 		}
 		return exists
 	})
@@ -57,6 +73,46 @@ func sendBlogToMail() {
 			Subject:  "每日一学",
 		}
 
+		SendToMail(emailContent)
+	}
+}
+
+func sendBossToMail() {
+	fmt.Println("exec boss to mail")
+	cells := []boss.BossCell{}
+	//storage.GetStorageContent(time.Now().Add(-24*time.Hour), "boss", func(raw []byte) bool {
+	storage.GetStorageContent(time.Now().Add(-24*time.Hour), "boss", func(raw []byte) bool {
+		cell := boss.BossCell{}
+		if err := json.Unmarshal(raw, &cell); err != nil {
+			return false
+		}
+		exists := storage.Check("boss", cell.Company+"-"+cell.Title)
+		if !exists {
+			storage.Put("boss", cell.Company+"-"+cell.Title, "1")
+			cells = append(cells, cell)
+		}
+		return exists
+	})
+	var buf bytes.Buffer
+	if len(cells) > 0 {
+		// 组装html body
+		buf.WriteString(`<ul>`)
+		for _, cell := range cells {
+			buf.WriteString(`<li>`)
+			buf.WriteString(fmt.Sprintf(`<a href="%s"><div><div>%s&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp%s</div><div>%s</div><div><em>%s&nbsp&nbsp</em><em>%s&nbsp&nbsp</em><em>%s&nbsp&nbsp</em></div></div></a>`, cell.Href, cell.Title, cell.Salary, cell.Company, cell.City, cell.Time, cell.Educational))
+			buf.WriteString(`</li>`)
+		}
+		buf.WriteString(`</ul>`)
+
+		emailContent := EmailPackage{
+			User:     config.Conf.Mail.User,
+			Password: config.Conf.Mail.Password,
+			Host:     config.Conf.Mail.Host,
+			Body:     buf.String(),
+			Type:     "html",
+			To:       config.Conf.Mail.To,
+			Subject:  "golang聘",
+		}
 		SendToMail(emailContent)
 	}
 }

@@ -1,6 +1,6 @@
 {
 	"mail": {
-		"user": "xxxx@qq.com",
+		"user": "xxxxx@qq.com",
 		"password": "xxxx",
 		"host": "smtp.qq.com:25",
 		"to": "xxxx@qq.com"

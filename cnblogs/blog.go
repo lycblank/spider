@@ -10,6 +10,12 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
+type BlogCell struct {
+	Href   string `json:"href"`
+	Title  string `json:"title"`
+	Source string `json:"source"`
+}
+
 type CNBlogs struct {
 	sp spider.ISpider
 }
@@ -40,9 +46,12 @@ func (b *CNBlogs) filter(doc *goquery.Document) error {
 		if href, exists := s.Attr("href"); exists && href != "" {
 			if title, err := s.Html(); err == nil && title != "" {
 				cells = append(cells, storage.StorageCell{
-					Href:   href,
-					Title:  title,
-					Source: `博客园`,
+					Key: "blog-" + title,
+					Value: BlogCell{
+						Href:   href,
+						Title:  title,
+						Source: `博客园`,
+					},
 				})
 			}
 		}
@@ -52,7 +61,7 @@ func (b *CNBlogs) filter(doc *goquery.Document) error {
 }
 
 func (b *CNBlogs) storage(cells []storage.StorageCell) {
-	storage.Storage(cells)
+	storage.Storage("blog", cells)
 }
 
 func (b *CNBlogs) exec(minTime time.Duration, maxTime time.Duration, callback TimerFunc) {
