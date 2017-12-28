@@ -41,7 +41,7 @@ func (b *Boss) Run() {
 
 func (b *Boss) spider() {
 	// 抓取5页 golang 数据
-	for i := 0; i < 1; i++ {
+	for i := 0; i < 5; i++ {
 		if err := b.sp.Spider(fmt.Sprintf(`http://www.zhipin.com/mobile/jobs.json?page=%d&city=101270100&query=golang`, i+1), nil, b.filter); err != nil {
 			fmt.Println(err)
 			break
