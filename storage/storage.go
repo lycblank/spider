@@ -72,7 +72,7 @@ func (ks *kvStroage) getStorageContent(prefix string, filter func(raw []byte) bo
 
 func (ks *kvStroage) check(prefix string, k string) bool {
 	key := ks.getKey(prefix, k, false)
-	ret, err := ks.db.Has([]byte(prefix+"-"+string(key)), nil)
+	ret, err := ks.db.Has(key, nil)
 	return err == nil && ret
 }
 
